@@ -3,6 +3,8 @@ import urllib2
 from re import sub
 import operator
 import csv
+import json
+
 
 class PopulationTableGrabber(object):
     def __init__(self, url):
@@ -59,7 +61,13 @@ class PopulationTableGrabber(object):
         dict_writer.writer.writerow(keys)
         dict_writer.writerows(dicts)
         f.close()
-        
+        ''' this also prints to json so that i can use it in d3 later
+            i'll read the json into R for my immediate graph as well
+        '''
+        with open("citypop.json",'w') as outfile:
+            json.dump(dicts, outfile)
+            
+
 
 pop = PopulationTableGrabber('http://www.peakbagger.com/pbgeog/histmetropop.aspx')
 pop.write_csv(pop.reshape_city_data(pop.find_all_tabs()))
