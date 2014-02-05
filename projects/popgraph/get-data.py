@@ -67,8 +67,6 @@ class PopulationTableGrabber(object):
         with open("citypop.json",'w') as outfile:
             json.dump(dicts, outfile)
             
-
-
 pop = PopulationTableGrabber('http://www.peakbagger.com/pbgeog/histmetropop.aspx')
 pop.write_csv(pop.reshape_city_data(pop.find_all_tabs()))
 
