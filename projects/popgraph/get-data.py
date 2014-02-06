@@ -66,9 +66,10 @@ class PopulationTableGrabber(object):
         '''
         with open("citypop.json",'w') as outfile:
             json.dump(dicts, outfile)
-            
+
 pop = PopulationTableGrabber('http://www.peakbagger.com/pbgeog/histmetropop.aspx')
 pop.write_csv(pop.reshape_city_data(pop.find_all_tabs()))
+
 
 ## I transcribed total population in millions:
 ## https://docs.google.com/spreadsheet/pub?key=0AruyJI76uB8RdFBySUhzRldyalJGTXZtY1NxT0E2Z1E&output=csv
