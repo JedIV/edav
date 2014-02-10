@@ -11,10 +11,10 @@ h1, h2, h3 {
 }
 
 h2, h3 {
-  text-align: right;
+  text-align: left;
   font-size: inherit;
   position: absolute;
-  bottom: 0;
+  <!-- bottom: 0; -->
   right: 0;
 }
 
@@ -28,10 +28,6 @@ h3 {
   font-size: 18px;
 }
 
-container {
-  position: absolute;
-
-}
 
 .states {
   fill: #ccc;
@@ -71,7 +67,10 @@ container {
   <span></span>
 </h1>
 <h2>
-  <span></span><br>U.S. Largest Cities 1790 - 2010
+  U.S. Largest Cities<br>
+  1790 - 2010<br>
+  Press any key.
+  <span></span>
 </h2>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
@@ -211,4 +210,3 @@ d3.select("body")
     });
 
 </script>
-<div id="container"></div>
