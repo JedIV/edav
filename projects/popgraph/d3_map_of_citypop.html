@@ -1,6 +1,37 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
+h1 {
+  font-size: 64px;
+}
+
+h1, h2, h3 {
+  font-weight: inherit;
+  margin: 0;
+}
+
+h2, h3 {
+  text-align: right;
+  font-size: inherit;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+h2 {
+  font-size: 14px;
+  position: absolute;
+}
+
+h3 {
+  bottom: -20px;
+  font-size: 18px;
+}
+
+container {
+  position: absolute;
+
+}
 
 .states {
   fill: #ccc;
@@ -11,7 +42,6 @@
   fill: steelblue;
   stroke: grey;
   opacity: .6;
-
 }
 
 .circle:hover {
@@ -28,19 +58,6 @@
   position: absolute;
 }
 
-/* Creates a small triangle extender for the tooltip */
-.d3-tip:after {
-  box-sizing: border-box;
-  display: inline;
-  font-size: 10px;
-  width: 100%;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.8);
-  content: "\25BC";
-  position: relative;
-  text-align: center;
-}
-
 /* Style northward tooltips differently */
 .d3-tip.n:after {
   margin: -1px 0 0 0;
@@ -50,6 +67,12 @@
 
 </style>
 <body>
+<h1>
+  <span></span>
+</h1>
+<h2>
+  <span></span><br>U.S. Largest Cities 1790 - 2010
+</h2>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
@@ -64,28 +87,39 @@ var radius = d3.scale.sqrt()
 
 //http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
 function numberWithCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 var tip = d3.tip()
-  .attr('class', 'd3-tip')
-  .offset([-10, 0])
-  .html(function(d) {
-    return "<strong> <span style='color:red'>" + d.city + "</span>" +
-      "<strong><br>Rank:</strong> <span style='color:white'>" + d.rank + "</span>" +
-      "<strong><br>Pop:</strong> <span style='color:white'>" + numberWithCommas(d.pop * 1000) + "</span>";
-  })
+    .attr('class', 'd3-tip')
+    .offset([-10, 0])
+    .html(function(d) {
+      return "<strong> <span style='color:red'>" + d.city + "</span>" +
+        "<strong><br>Rank:</strong> <span style='color:white'>" + d.rank + "</span>" +
+        "<strong><br>Pop:</strong> <span style='color:white'>" + numberWithCommas(d.pop * 1000) + "</span>";
+    })
 
 var projection = d3.geo.conicConformal()
-  .rotate([98, 0])
-  .center([0, 38])
-  .parallels([29.5, 45.5])
-  .scale(1000)
-  .translate([width / 2, height / 2])
-  .precision(.1);
+    .rotate([98, 0])
+    .center([0, 38])
+    .parallels([29.5, 45.5])
+    .scale(1000)
+    .translate([width / 2, height / 2])
+    .precision(.1);
 
 var path = d3.geo.path()
     .projection(projection);
+
+
+var pop_data = [];
+var year = 1790;
+
+function get_data(the_year){
+  d3.csv("citypop_with_lat_long.csv", function(error, data) {
+    pop_data = data.filter(function(d) { return d.year == the_year; })
+
+  });
+};
 
 var svg = d3.select("body").append("svg")
     .attr("width", width)
@@ -95,24 +129,86 @@ svg.call(tip);
 
 d3.json ("us.json", function(error, us) {
   svg.append("path")
-      .attr("class", "states")
-      .datum(topojson.feature(us, us.objects.states))
-      .attr("d", path);
-  d3.csv("citypop_with_lat_long.csv", function(error, data) {
-  var cities =  svg.selectAll(".circle")
-        .data(data.filter(function(d) { return d.year == 1850; }))
-        .enter().append("svg:circle")
-        .attr("class","circle")
-        .attr("cx", function(d) {
-                return projection([d.longitude, d.latitude])[0];
-        })
-        .attr("cy", function(d) {
-                return projection([d.longitude, d.latitude])[1];
-        })
-        .attr("r",function(d) {return (30 - d.rank);
-        })
-        .on('mouseover', tip.show)
-        .on('mouseout', tip.hide)
+    .attr("class", "states")
+    .datum(topojson.feature(us, us.objects.states))
+    .attr("d", path);
 });
-});
+
+render(year);
+
+function render(the_year){
+
+  svg.selectAll("circle").remove();
+
+  get_data(the_year);
+  var cities =  svg.selectAll("circle")
+      .data(pop_data);
+
+  cities
+      .enter().append("circle")
+      .attr("class","circle")
+      .attr("cx", function(d) {
+              return projection([d.longitude, d.latitude])[0];
+      })
+      .attr("cy", function(d) {
+              return projection([d.longitude, d.latitude])[1];
+      })
+      .attr("r" , function(d) {return (Math.sqrt(d.pop)/3);
+      })
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide);
+
+  d3.select("h1 span").text(year);
+
+  var columns = ["city", "rank"];
+
+    d3.select("table").remove();
+
+    var table = d3.select("h2 span").append("table"),
+        thead = table.append("thead"),
+        tbody = table.append("tbody");
+
+    // append the header row
+    thead.append("tr")
+        .selectAll("th")
+        .data(columns)
+        .enter()
+        .append("th")
+            .text(function(column) { return column; });
+    // create a row for each object in the data
+    var rows = tbody.selectAll("tr")
+        .data(pop_data)
+        .enter()
+        .append("tr");
+
+    // create a cell in each row for each column
+    var cells = rows.selectAll("td")
+        .data(function(row) {
+            return columns.map(function(column) {
+                return {column: column, value: row[column]};
+            });
+        })
+        .enter()
+        .append("td")
+            .text(function(d) { return d.value; });
+};
+
+
+d3.select("body")
+    .on("keydown", function(event) {
+      if (year < 2010)
+      {
+        new_year = year + 10;
+        render(new_year);
+      }
+      else
+      {
+        new_year = 1790;
+        render(new_year);
+      }
+      year = new_year;
+    return false;
+    });
+
 </script>
+<div id="container"></div>
